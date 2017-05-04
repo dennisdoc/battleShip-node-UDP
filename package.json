@@ -1,0 +1,23 @@
+{
+  "name": "battleship",
+  "version": "1.0.0",
+  "description": "Battle Ship Game using node UDP connection between two computers",
+  "main": "src/app/game.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/app/game.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dennisdoc/battleShip-node-UDP.git"
+  },
+  "author": "dennis.cremasco",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dennisdoc/battleShip-node-UDP/issues"
+  },
+  "homepage": "https://github.com/dennisdoc/battleShip-node-UDP#readme",
+  "dependencies": {
+    "dgram": "^1.0.1"
+  }
+}
