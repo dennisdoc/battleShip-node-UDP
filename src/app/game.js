@@ -12,19 +12,32 @@ var HOST2 = '192.168.100.39';
 var PORT = 33334;
 var HOST = '127.0.0.1';
 
-var user1Field=[
-  [0,0,0,1,0,0,0,0,1,0],
-  [0,0,0,1,0,0,0,0,1,0],
-  [0,0,0,1,0,0,0,0,1,0],
-  [0,0,0,1,0,0,0,0,1,0]
-];
+var user1Field=generateField(9,9);
 
-var user2Field=[
-  [0,0,0,1,0,0,0,0,1,0],
-  [0,0,0,1,0,0,0,0,1,0],
-  [0,0,0,1,0,0,0,0,1,0],
-  [0,0,0,1,0,0,0,0,1,0]
-];
+var user2Field=generateField(9,9);
+
+function generateField(sizeY,sizeX){
+  var field=[];
+  var numberBoats=0;
+  var limit=12;
+  for(var i=0;i<sizeY;i++){
+    var line=[];
+    for(var j=0;j<sizeX;j++){
+      var value;
+      if(numberBoats>=limit){
+        value=0;
+      }else{
+        value=Math.random() >= 0.15 ? 0:1;
+        if(value==1){
+          numberBoats++;
+        }
+      }
+      line.push(value);
+    }
+    field.push(line)
+  }
+  return field;
+}
 
 server.on('error', (err) => {
   console.log(`server error:\n${err.stack}`);
@@ -115,12 +128,24 @@ function verificaTermino(field){
 }
 
 function printCampo(field){
-  for(var i=0;i<field.length;i++){
-    var print="";
-    for(var j=0;j<field[i].length;j++){
-      print=print+(field[i][j]==1 ? '+':'-');
+  if(usuarioAtual!=null){
+    var xPrint=" x";
+    for(var i=0;i<field.length;i++){
+      var print="";
+      for(var j=0;j<field[i].length;j++){
+        if(i==0){
+          var espaco=j >9  ? " ":"  ";
+          xPrint=xPrint+espaco+(j+1);
+        }
+        print=print+(field[i][j]==1 ? ' + ':' - ');
+      }
+      if(i==0){
+        console.log(xPrint);
+        console.log("y");
+      }
+      var espacoy=i >9  ? "":"  ";
+      console.log((i+1) +espacoy+print);
     }
-    console.log(print);
   }
 }
 
@@ -133,9 +158,14 @@ function getPonto(point){
 }
 
 stdin.addListener("data", function(d) {
-    console.log("you entered: [" +
-    d.toString().trim().charAt(0) +","+d.toString().trim().charAt(1)+ "]");
-    point.x=Number(d.toString().trim().charAt(0));
-    point.y=Number(d.toString().trim().charAt(1));
-    atacar(point);
+    if(d.toString().indexOf(",")>0){
+      var array=d.toString().split(",");
+      console.log("you entered: [" +
+      array[0] +","+array[1]+ "]");
+      point.x=Number(array[0]);
+      point.y=Number(array[1]);
+      atacar(point);
+    }else{
+      console.log("digite formatdo correto: (x,y)");
+    }
 });
