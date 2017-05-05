@@ -3,12 +3,14 @@ const server = dgram.createSocket('udp4');
 
 var point={x:3,y:3};
 var vezEnum=["usuario1","usuario2"];
+var usuarioAtual=null;
 var vez=vezEnum[0];
 var message = new Buffer(JSON.stringify(point));
-var PORT = 33333;
-var HOST = '127.0.0.1';
 var PORT2 = 33333;
-var HOST2 = '127.0.0.1';
+var HOST2 = '192.168.100.39';
+
+var PORT = 33334;
+var HOST = '127.0.0.1';
 
 var user1Field=[
   [0,0,0,1,0,0,0,0,1,0],
@@ -32,13 +34,16 @@ server.on('error', (err) => {
 server.on('message', (msg, rinfo) => {
   var params=JSON.parse(msg);
   var mensagem=params.sucesso ? 'Acertou':'Falhou';
-  console.log(params.user + " Levou Ataque que " + mensagem);
+  console.log("Voce Levou Ataque que " + mensagem);
+  vez=params.user;
+  setUsuarioAtual(vez);
   if(params.user==vezEnum[0]){
     user1Field=params.field;
   }else{
     user2field=params.field;
   }
   printCampo(params.field);
+  verificaTermino(params.field);
 });
 
 server.on('listening', () => {
@@ -46,36 +51,49 @@ server.on('listening', () => {
   console.log(`server listening ${address.address}:${address.port}`);
 });
 
-server.bind(PORT);
+server.bind(PORT,HOST);
 
 var stdin = process.openStdin();
 
-function atacar(point){
-  point.x--;
-  point.y--;
-  var field= getField();
-  var target=vez==vezEnum[0] ? vezEnum[1]:vezEnum[0];
-  if(field[point.y] && field[point.y][point.x]!=undefined){
-    var sucesso;
-    if(field[point.y][point.x]==1){
-      sucesso=true;
-      console.log(vez+ ' Acertou '+target +' no ponto ' + getPonto(point));
-      field[point.y][point.x]=0;
-    }else{
-      sucesso=false;
-      console.log(vez+ ' Errou ' +target +' no ponto ' + getPonto(point));
-    }
-    console.log("Vez do "+target);
-    verificaTermino(field);
-    trocaVez();
+function setUsuarioAtual(usuario){
+  if(usuarioAtual==null){
+    usuarioAtual=usuario;
+  }
+}
 
-    var message=new Buffer(JSON.stringify({user:vez,field:field,sucesso:sucesso}));
-    server.send(message, 0, message.length, PORT2, HOST2, function(err, bytes) {
-      if (err) throw err;
-      // console.log('UDP message sent to ' + HOST2 +':'+ PORT2);
-    });
+function atacar(point){
+  if(vez==usuarioAtual || usuarioAtual==null){
+    point.x--;
+    point.y--;
+    var field= getField();
+    var target=vez==vezEnum[0] ? vezEnum[1]:vezEnum[0];
+    setUsuarioAtual(vez);
+    if(field[point.y] && field[point.y][point.x]!=undefined){
+      var sucesso;
+      if(field[point.y][point.x]==1){
+        sucesso=true;
+        console.log('Voce Acertou '+target +' no ponto ' + getPonto(point));
+        field[point.y][point.x]=0;
+      }else{
+        sucesso=false;
+        console.log('Voce Errou ' +target +' no ponto ' + getPonto(point));
+      }
+      console.log("Vez do "+target);
+      verificaTermino(field);
+      trocaVez();
+
+      var message=new Buffer(JSON.stringify({user:vez,field:field,sucesso:sucesso}));
+      server.send(message, 0, message.length, PORT2, HOST2, function(err, bytes) {
+        if (err) throw err;
+        // console.log('UDP message sent to ' + HOST2 +':'+ PORT2);
+      });
+    }else{
+      console.log("Ponto Inexistente");
+    }
   }else{
-    console.log("Ponto Inexistente");
+    console.log("Não e sua vez.Aguarde...");
+    console.log("Seu campo:");
+    printCampo(usuarioAtual==vezEnum[0] ?user1Field:user2Field);
   }
 }
 
@@ -93,6 +111,7 @@ function verificaTermino(field){
   }
   console.log("Finished");
   server.close();
+  process.exit()
 }
 
 function printCampo(field){
