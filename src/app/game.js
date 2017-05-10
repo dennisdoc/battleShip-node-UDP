@@ -6,11 +6,12 @@ var vezEnum=["usuario1","usuario2"];
 var usuarioAtual=null;
 var vez=vezEnum[0];
 var message = new Buffer(JSON.stringify(point));
-var PORT2 = 33333;
-var HOST2 = '192.168.100.39';
+var PORT = 33333;
+var HOST = '10.231.160.20'; 
 
-var PORT = 33334;
-var HOST = '127.0.0.1';
+
+var PORT2 = 33333;
+var HOST2 = '10.231.159.213';
 
 var user1Field=generateField(9,9);
 
@@ -47,7 +48,7 @@ server.on('error', (err) => {
 server.on('message', (msg, rinfo) => {
   var params=JSON.parse(msg);
   var mensagem=params.sucesso ? 'Acertou':'Falhou';
-  console.log("Voce Levou Ataque que " + mensagem);
+  console.log(params.user +",Voce Levou Ataque que " + mensagem);
   vez=params.user;
   setUsuarioAtual(vez);
   if(params.user==vezEnum[0]){
@@ -87,6 +88,7 @@ function atacar(point){
         sucesso=true;
         console.log('Voce Acertou '+target +' no ponto ' + getPonto(point));
         field[point.y][point.x]=0;
+        vez==vezEnum[0] ? user1Field=field:user2Field=field;
       }else{
         sucesso=false;
         console.log('Voce Errou ' +target +' no ponto ' + getPonto(point));
