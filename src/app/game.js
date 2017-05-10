@@ -7,7 +7,9 @@ var usuarioAtual=null;
 var vez=vezEnum[0];
 var message = new Buffer(JSON.stringify(point));
 var PORT = 33333;
-var HOST = '10.231.160.20'; 
+var HOST = '10.231.160.20';
+
+var tentativas=[];
 
 
 var PORT2 = 33333;
@@ -18,6 +20,7 @@ var user1Field=generateField(9,9);
 var user2Field=generateField(9,9);
 
 function generateField(sizeY,sizeX){
+  console.log("generated");
   var field=[];
   var numberBoats=0;
   var limit=12;
@@ -83,16 +86,17 @@ function atacar(point){
     var target=vez==vezEnum[0] ? vezEnum[1]:vezEnum[0];
     setUsuarioAtual(vez);
     if(field[point.y] && field[point.y][point.x]!=undefined){
-      var sucesso;
-      if(field[point.y][point.x]==1){
-        sucesso=true;
-        console.log('Voce Acertou '+target +' no ponto ' + getPonto(point));
+      var sucesso=field[point.y][point.x]==1;
+      if(sucesso){
+        console.log(vez+',Voce Acertou '+target +' no ponto ' + getPonto(point));
+        
         field[point.y][point.x]=0;
         vez==vezEnum[0] ? user1Field=field:user2Field=field;
       }else{
-        sucesso=false;
-        console.log('Voce Errou ' +target +' no ponto ' + getPonto(point));
+        console.log(vez + ',Voce Errou ' +target +' no ponto ' + getPonto(point));
       }
+      tentativas.push({x:point.x,y:point.y});
+      printTentativas();
       console.log("Vez do "+target);
       verificaTermino(field);
       trocaVez();
@@ -127,6 +131,14 @@ function verificaTermino(field){
   console.log("Finished");
   server.close();
   process.exit()
+}
+
+function printTentativas(){
+  var print="Tentivas = : ";
+  for(var i=0;i<tentativas.length;i++){
+    print= print+"("+(tentativas[i].x +1) +" , "+ (tentativas[i].y +1) + ")";
+  }
+  console.log(print);
 }
 
 function printCampo(field){
